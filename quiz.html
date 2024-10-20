@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizezz</title>
+    <style>
+        body {
+            background-color: #4c8ab3;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .quiz-container {
+            margin-top: 80px;
+            background-color: #94c4e1;
+            border-radius: 8px;
+            padding: 50px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .question {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+        .options {
+            display: grid;
+            gap: 10px;
+        }
+        button {
+            background-color: #3a4fd9;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        #next-btn, #restart-btn {
+            display: block;
+            margin: 20px auto 0;
+        }
+        #score-container, #category-selection, #difficulty-selection {
+            text-align: center;
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+        #timer {
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        #progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        #progress {
+            width: 0;
+            height: 100%;
+            background-color: #2ecc71;
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+        }
+        .difficulty {
+            display: inline-block;
+            margin: 0 10px;
+        }
+        .difficulty input[type="radio"] {
+            display: none;
+        }
+        .difficulty label {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .difficulty input[type="radio"]:checked + label {
+            background-color: #2ecc71;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Quizezz</h1>
+        <div id="category-selection">
+            <h2>Select a Category:</h2>
+            <select id="category">
+                <option value="general">General Knowledge</option>
+                <option value="science">Science</option>
+                <option value="history">History</option>
+            </select>
+        </div>
+        <div id="difficulty-selection">
+            <h2>Select Difficulty:</h2>
+            <div class="difficulty">
+                <input type="radio" id="easy" name="difficulty" value="easy" checked>
+                <label for="easy">Easy</label>
+            </div>
+            <div class="difficulty">
+                <input type="radio" id="medium" name="difficulty" value="medium">
+                <label for="medium">Medium</label>
+            </div>
+            <div class="difficulty">
+                <input type="radio" id="hard" name="difficulty" value="hard">
+                <label for="hard">Hard</label>
+            </div>
+        </div>
+        <button id="start-btn">Start Quiz</button>
+        <div id="quiz" style="display: none;">
+            <div id="timer">Time: 30</div>
+            <div id="progress-bar"><div id="progress"></div></div>
+            <div id="question-container">
+                <p id="question" class="question"></p>
+                <div id="options" class="options"></div>
+            </div>
+            <button id="next-btn" disabled>Next Question</button>
+        </div>
+        <div id="score-container" style="display: none;">
+            <h2>Quiz Completed!</h2>
+            <p>Your score: <span id="score"></span></p>
+            <p>Time taken: <span id="time-taken"></span> seconds</p>
+            <button id="restart-btn">Restart Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        const quizQuestions = {
+    general: {
+        easy: [
+            {
+                question: "What is the capital of France?",
+                options: ["London", "Berlin", "Paris", "Madrid"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which planet is known as the Red Planet?",
+                options: ["Venus", "Mars", "Jupiter", "Saturn"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the largest mammal in the world?",
+                options: ["Elephant", "Blue Whale", "Great White Shark", "Giraffe"],
+                correctAnswer: 1
+            },
+            {
+                question: "Which country is known for the Great Pyramid?",
+                options: ["Mexico", "Egypt", "China", "India"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the smallest continent?",
+                options: ["Australia", "Europe", "Asia", "Antarctica"],
+                correctAnswer: 0
+            },
+            {
+                question: "What is the capital of France?",
+                options: ["London", "Berlin", "Paris", "Madrid"],
+                correctAnswer: 2
+            }
+        ],
+        medium: [
+            {
+                question: "Who wrote 'To Kill a Mockingbird'?",
+                options: ["Harper Lee", "Mark Twain", "John Steinbeck", "F. Scott Fitzgerald"],
+                correctAnswer: 0
+            },
+            {
+                question: "What is the chemical symbol for gold?",
+                options: ["Go", "Gd", "Au", "Ag"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which ocean is the largest?",
+                options: ["Atlantic Ocean", "Indian Ocean", "Pacific Ocean", "Arctic Ocean"],
+                correctAnswer: 2
+            },
+            {
+                question: "Who painted the Mona Lisa?",
+                options: ["Vincent Van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet"],
+                correctAnswer: 2
+            },
+            {
+                question: "What is the hardest natural substance on Earth?",
+                options: ["Gold", "Iron", "Diamond", "Titanium"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which planet is known as the Red Planet?",
+                options: ["Venus", "Mars", "Jupiter", "Saturn"],
+                correctAnswer: 1
+            }
+        ],
+        hard: [
+            {
+                question: "What is the smallest prime number greater than 100?",
+                options: ["101", "103", "107", "109"],
+                correctAnswer: 1
+            },
+            {
+                question: "Who was the first woman to win a Nobel Prize?",
+                options: ["Marie Curie", "Mother Teresa", "Jane Addams", "Barbara McClintock"],
+                correctAnswer: 0
+            },
+            {
+                question: "What is the longest river in the world?",
+                options: ["Amazon River", "Nile River", "Yangtze River", "Mississippi River"],
+                correctAnswer: 1
+            },
+            {
+                question: "Which scientist developed the theory of general relativity?",
+                options: ["Isaac Newton", "Galileo Galilei", "Albert Einstein", "Stephen Hawking"],
+                correctAnswer: 2
+            },
+            {
+                question: "In which year did the Titanic sink?",
+                options: ["1905", "1912", "1915", "1920"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the largest mammal in the world?",
+                options: ["African Elephant", "Blue Whale", "Giraffe", "Hippopotamus"],
+                correctAnswer: 1
+            }
+        ]
+    },
+    science: {
+        easy: [
+            {
+                question: "What is the chemical formula for water?",
+                options: ["CO2", "H2O", "NaCl", "O2"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the largest organ in the human body?",
+                options: ["Heart", "Brain", "Liver", "Skin"],
+                correctAnswer: 3
+            },
+            {
+                question: "What gas do plants absorb from the atmosphere?",
+                options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+                correctAnswer: 2
+            },
+            {
+                question: "What is the process by which plants make their food?",
+                options: ["Photosynthesis", "Respiration", "Transpiration", "Evaporation"],
+                correctAnswer: 0
+            },
+            {
+                question: "What is the chemical symbol for sodium?",
+                options: ["S", "Na", "So", "N"],
+                correctAnswer: 1
+            },
+            {
+                question: "Which element has the atomic number 1?",
+                options: ["Helium", "Oxygen", "Hydrogen", "Carbon"],
+                correctAnswer: 2
+            }
+        ],
+        medium: [
+            {
+                question: "What is the speed of light in vacuum?",
+                options: ["299,792 km/s", "300,000 km/s", "301,000 km/s", "298,000 km/s"],
+                correctAnswer: 0
+            },
+            {
+                question: "What is the hardest natural substance on Earth?",
+                options: ["Gold", "Iron", "Diamond", "Titanium"],
+                correctAnswer: 2
+            },
+            {
+                question: "What is the main gas found in the air we breathe?",
+                options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+                correctAnswer: 1
+            },
+            {
+                question: "What type of animal is a blue whale?",
+                options: ["Fish", "Mammal", "Reptile", "Amphibian"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the name of the largest desert in the world?",
+                options: ["Sahara", "Arabian", "Gobi", "Antarctic"],
+                correctAnswer: 3
+            },
+            {
+                question: "What is the chemical symbol for water?",
+                options: ["O2", "H2O", "CO2", "NaCl"],
+                correctAnswer: 1
+            }
+        ],
+        hard: [
+            {
+                question: "What is the half-life of Carbon-14?",
+                options: ["5,730 years", "1,000 years", "10,000 years", "50,000 years"],
+                correctAnswer: 0
+            },
+            {
+                question: "What is the name of the closest known black hole to Earth?",
+                options: ["Sagittarius A*", "Cygnus X-1", "V616 Monocerotis", "NGC 6624"],
+                correctAnswer: 2
+            },
+            {
+                question: "What is the primary component of the sun?",
+                options: ["Oxygen", "Hydrogen", "Helium", "Carbon"],
+                correctAnswer: 1
+            },
+            {
+                question: "Which planet is known for its rings?",
+                options: ["Jupiter", "Mars", "Saturn", "Uranus"],
+                correctAnswer: 2
+            },
+            {
+                question: "What is the unit of electrical resistance?",
+                options: ["Ohm", "Volt", "Ampere", "Watt"],
+                correctAnswer: 0
+            }
+        ]
+    },
+    history: {
+        easy: [
+            {
+                question: "In which year did World War II end?",
+                options: ["1943", "1944", "1945", "1946"],
+                correctAnswer: 2
+            },
+            {
+                question: "Who was the first President of the United States?",
+                options: ["Thomas Jefferson", "John Adams", "George Washington", "Benjamin Franklin"],
+                correctAnswer: 2
+            },
+            {
+                question: "What ancient civilization built the pyramids?",
+                options: ["Roman", "Egyptian", "Mayan", "Greek"],
+                correctAnswer: 1
+            },
+            {
+                question: "Who was the first man to walk on the moon?",
+                options: ["Buzz Aldrin", "Yuri Gagarin", "Neil Armstrong", "Michael Collins"],
+                correctAnswer: 2
+            },
+            {
+                question: "What year did the Berlin Wall fall?",
+                options: ["1987", "1988", "1989", "1990"],
+                correctAnswer: 2
+            }
+        ],
+        medium: [
+            {
+                question: "In which year did the French Revolution begin?",
+                options: ["1769", "1779", "1789", "1799"],
+                correctAnswer: 2
+            },
+            {
+                question: "Who was the last Pharaoh of Ancient Egypt?",
+                options: ["Nefertiti", "Cleopatra", "Hatshepsut", "Tiye"],
+                correctAnswer: 1
+            },
+            {
+                question: "What was the name of the ship that brought the Pilgrims to America?",
+                options: ["Mayflower", "Santa Maria", "Nina", "Pinta"],
+                correctAnswer: 0
+            },
+            {
+                question: "Who was known as the Iron Lady?",
+                options: ["Angela Merkel", "Margaret Thatcher", "Golda Meir", "Indira Gandhi"],
+                correctAnswer: 1
+            },
+            {
+                question: "What event started World War I?",
+                options: ["The sinking of the Lusitania", "The assassination of Archduke Franz Ferdinand", "The invasion of Poland", "The bombing of Pearl Harbor"],
+                correctAnswer: 1
+            }
+        ],
+        hard: [
+            {
+                question: "In which year was the Magna Carta signed?",
+                options: ["1215", "1225", "1235", "1245"],
+                correctAnswer: 0
+            },
+            {
+                question: "Who was the leader of the Bolsheviks during the Russian Revolution?",
+                options: ["Joseph Stalin", "Leon Trotsky", "Vladimir Lenin", "Nikita Khrushchev"],
+                correctAnswer: 2
+            },
+            {
+                question: "What was the main cause of the Cold War?",
+                options: ["Disagreement over economic systems", "Territorial disputes", "Religious differences", "Nationalism"],
+                correctAnswer: 0
+            },
+            {
+                question: "Which empire was known for its extensive road system?",
+                options: ["Roman Empire", "Ottoman Empire", "Mongol Empire", "Byzantine Empire"],
+                correctAnswer: 0
+            },
+            {
+                question: "Who was the first Roman Emperor?",
+                options: ["Julius Caesar", "Augustus", "Nero", "Caligula"],
+                correctAnswer: 1
+            }
+        ]
+    }
+};
+
+
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedAnswer = null;
+        let timer;
+        let timeLeft = 30;
+        let category;
+        let difficulty;
+        let questions;
+
+        const categorySelect = document.getElementById('category');
+        const difficultyInputs = document.querySelectorAll('input[name="difficulty"]');
+        const startBtn = document.getElementById('start-btn');
+        const quizContainer = document.getElementById('quiz');
+        const questionEl = document.getElementById('question');
+        const optionsEl = document.getElementById('options');
+        const nextBtn = document.getElementById('next-btn');
+        const scoreContainer = document.getElementById('score-container');
+        const scoreEl = document.getElementById('score');
+        const timeTakenEl = document.getElementById('time-taken');
+        const restartBtn = document.getElementById('restart-btn');
+        const timerEl = document.getElementById('timer');
+        const progressEl = document.getElementById('progress');
+
+        startBtn.addEventListener('click', startQuiz);
+        nextBtn.addEventListener('click', nextQuestion);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        function startQuiz() {
+            category = categorySelect.value;
+            difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+            questions = quizQuestions[category][difficulty];
+            currentQuestion = 0;
+            score = 0;
+            document.getElementById('category-selection').style.display = 'none';
+            document.getElementById('difficulty-selection').style.display = 'none';
+            startBtn.style.display = 'none';
+            quizContainer.style.display = 'block';
+            loadQuestion();
+            startTimer();
+        }
+
+        function loadQuestion() {
+            const question = questions[currentQuestion];
+            questionEl.textContent = question.question;
+            optionsEl.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.addEventListener('click', () => selectAnswer(index));
+                optionsEl.appendChild(button);
+            });
+            nextBtn.disabled = true;
+            updateProgressBar();
+        }
+
+        function selectAnswer(index) {
+            selectedAnswer = index;
+            const buttons = optionsEl.getElementsByTagName('button');
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].style.backgroundColor = i === index ? '#2ecc71' : '#3498db';
+            }
+            nextBtn.disabled = false;
+        }
+
+        function nextQuestion() {
+            if (selectedAnswer === questions[currentQuestion].correctAnswer) {
+                score++;
+            }
+            currentQuestion++;
+            selectedAnswer = null;
+
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+                resetTimer();
+            } else {
+                showScore();
+            }
+        }
+
+        function showScore() {
+            clearInterval(timer);
+            quizContainer.style.display = 'none';
+            scoreContainer.style.display = 'block';
+            scoreEl.textContent = `${score} out of ${questions.length}`;
+            timeTakenEl.textContent = 30 * questions.length - timeLeft;
+        }
+
+        function restartQuiz() {
+            scoreContainer.style.display = 'none';
+            document.getElementById('category-selection').style.display = 'block';
+            document.getElementById('difficulty-selection').style.display = 'block';
+            startBtn.style.display = 'block';
+            resetTimer();
+        }
+
+        function startTimer() {
+            timeLeft = 30;
+            timer = setInterval(() => {
+                timeLeft--;
+                timerEl.textContent = `Time: ${timeLeft}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    nextQuestion();
+                }
+            }, 1000);
+        }
+
+        function resetTimer() {
+            clearInterval(timer);
+            startTimer();
+        }
+
+        function updateProgressBar() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            progressEl.style.width = `${progress}%`;
+        }
+    </script>
+</body>
+</html>
